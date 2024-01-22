@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"net/http"
 	"short-link/base/db"
 	"short-link/base/errno"
@@ -39,20 +40,21 @@ func Get(c *gin.Context) {
 	}
 	// from redis
 	originLink, err := db.GetRedisDb().Get(c, code).Result()
-	if err != nil {
-		fmt.Printf("err: %#v\n", err)
-		c.JSON(http.StatusOK, errno.ErrServer)
-	}
-	if len(originLink) == 0 {
+	if err == redis.Nil {
 		// from mysql
 		if err = db.GetMysqlDb().Where("short_code = ?", code).Find(&shortLink).Error; err != nil {
-			fmt.Printf("err: %#v\n", err)
+			fmt.Printf("mysql err: %#v\n", err)
 			c.JSON(http.StatusOK, errno.ErrServer)
 			return
 		}
 		db.GetRedisDb().Set(c, code, shortLink.OriginURL, time.Second*60*10)
 		c.JSON(http.StatusOK, errno.OK.WithData(shortLink.OriginURL))
 		return
+	} else if err != nil {
+		fmt.Printf("redis err: %#v\n", err)
+		c.JSON(http.StatusOK, errno.ErrServer)
+		return
+	} else {
+		c.JSON(http.StatusOK, errno.OK.WithData(originLink))
 	}
-	c.JSON(http.StatusOK, errno.OK.WithData(originLink))
 }
