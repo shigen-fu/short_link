@@ -14,4 +14,11 @@ func InitMysql() {
 	if db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{}); err != nil {
 		panic(err)
 	}
+	sqlDb, err := db.DB()
+	if err != nil {
+		panic(err)
+	}
+	// 最大空闲连接数
+	sqlDb.SetMaxIdleConns(10)
+	sqlDb.SetMaxOpenConns(100)
 }

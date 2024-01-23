@@ -11,9 +11,10 @@ var (
 	OK = NewError(0, "OK")
 
 	// 服务级错误码
-	ErrServer    = NewError(10001, "服务异常，请联系管理员")
-	ErrParam     = NewError(10002, "参数有误")
-	ErrSignParam = NewError(10003, "签名参数有误")
+	ErrServer        = NewError(10001, "服务异常，请联系管理员")
+	ErrParam         = NewError(10002, "参数有误")
+	ErrSignParam     = NewError(10003, "签名参数有误")
+	ErrUnknownServer = NewError(10004, "服务未知错误")
 
 	// 模块级错误码 - 用户模块
 	ErrLink         = NewError(20101, "链接格式错误")

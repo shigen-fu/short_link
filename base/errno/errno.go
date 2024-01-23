@@ -15,6 +15,8 @@ type Error interface {
 	WithID(id string) Error
 	// ToString 返回 JSON 格式的错误详情
 	ToString() string
+	GetCode() int
+	GetMsg() string
 }
 
 type err struct {
@@ -60,4 +62,12 @@ func (e *err) ToString() string {
 
 	raw, _ := json.Marshal(err)
 	return string(raw)
+}
+
+func (e *err) GetCode() int {
+	return e.Code
+}
+
+func (e *err) GetMsg() string {
+	return e.Msg
 }
