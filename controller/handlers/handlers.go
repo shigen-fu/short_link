@@ -37,14 +37,15 @@ func Get(c *gin.Context) {
 	var shortLink model.ShortLink
 	if len(code) == 0 {
 		c.JSON(http.StatusOK, errno.ErrLink)
+		return
 	}
 	// from redis
 	originLink, err := db.GetRedisDb().Get(c, code).Result()
 	if err == redis.Nil {
 		// from mysql
-		if err = db.GetMysqlDb().Where("short_code = ?", code).Find(&shortLink).Error; err != nil {
-			fmt.Printf("mysql err: %#v\n", err)
-			c.JSON(http.StatusOK, errno.ErrServer)
+		if count := db.GetMysqlDb().Where("short_code = ?", code).Find(&shortLink).RowsAffected; count == 0 {
+			fmt.Printf("code: %#v has no refer link\n", code)
+			c.JSON(http.StatusOK, errno.ErrLinkNotExist)
 			return
 		}
 		db.GetRedisDb().Set(c, code, shortLink.OriginURL, time.Second*60*10)
